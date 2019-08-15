@@ -1,6 +1,7 @@
 from django.db import models
 from pprint import pprint
 
+
 # Create your models here.
 class Student(models.Model):
     SEX_ITEMS = [
