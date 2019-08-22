@@ -81,13 +81,13 @@ class PostAdmin(BaseOwnerAdmin):
             'fields': ('desc', 'content'),
         }),
         ('额外信息', {
-            'classes': ('collapse',),  # 'wide'
+            'classes': ('wide',),  # 'wide' or 'collapse' 隐藏后样式无法显示???
             'fields': ('tag',),
         })
     )
     # 配置多对多字段的展示方式
-    # filter_horizontal = ('tag',)
-    filter_vertical = ('tag',)
+    filter_horizontal = ('tag',)
+    # filter_vertical = ('tag',)
 
     def operator(self, obj):
         return format_html('<a href="{}">编辑</a>', reverse('custom_admin:blog_post_change', args=(obj.id,)))
