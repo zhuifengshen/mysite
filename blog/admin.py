@@ -54,7 +54,7 @@ class CategoryOwnerFilter(admin.SimpleListFilter):
 @admin.register(Post, site=custom_site)
 class PostAdmin(BaseOwnerAdmin):
     form = PostAdminForm  # 文章描述字段更改为Textarea展示
-    list_display = ('title', 'category', 'status', 'created_time', 'operator')  # operator为新增列
+    list_display = ('title', 'category', 'status', 'created_time', 'pv', 'uv', 'operator')  # operator为新增列
     list_display_links = []
 
     list_filter = [CategoryOwnerFilter]

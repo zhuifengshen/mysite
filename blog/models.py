@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.functional import cached_property
+
+import mistune
 
 
 # Create your models here.
@@ -83,6 +86,7 @@ class Post(models.Model):
     title = models.CharField(max_length=255, verbose_name='标题')
     desc = models.CharField(max_length=1024, blank=True, verbose_name='摘要')
     content = models.TextField(verbose_name='正文', help_text='正文必须为MarkDown格式')
+    content_html = models.TextField(verbose_name='正文html代码', blank=True, editable=False)
     status = models.PositiveIntegerField(choices=STATUS_ITEMS, default=STATUS_NORMAL, verbose_name='状态')
     category = models.ForeignKey(Category, verbose_name='分类', on_delete=models.CASCADE)
     tag = models.ManyToManyField(Tag, verbose_name='标签')  # 可选 or 必须 ???
@@ -97,6 +101,14 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        self.content_html = mistune.markdown(self.content)  # 因为博文需要修改更新，所以生成markdown格式需要另外保存
+        super().save(*args, **kwargs)
+
+    @cached_property  # 作用是帮我们把返回的数据绑到实例上，不要每次访问时都去执行tags函数  TODO(Devin):与内在property的异同
+    def tags(self):
+        return ','.join(self.tag.values_list('name', flat=True))  # TODO(Devin): 多对多关联的获取
 
     @staticmethod
     def get_by_tag(tag_id):

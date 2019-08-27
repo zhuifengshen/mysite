@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 
 
 # Create your models here.
@@ -21,6 +22,7 @@ class Link(models.Model):
 
     class Meta:
         verbose_name = verbose_name_plural = '友链'
+        ordering = ['-weight']
 
     def __str__(self):
         return '友链' + self.title
@@ -37,11 +39,13 @@ class SideBar(models.Model):
     DISPLAY_LATEST = 2
     DISPLAY_HOT = 3
     DISPLAY_COMMENT = 4
+    DISPLAY_LINK = 5
     SIDE_TYPE = (
         (DISPLAY_HTML, 'HTML'),
         (DISPLAY_LATEST, '最新文章'),
         (DISPLAY_HOT, '最热文章'),
         (DISPLAY_COMMENT, '最近评论'),
+        (DISPLAY_LINK, '友情链接'),
     )
     title = models.CharField(max_length=50, verbose_name='标题')
     display_type = models.PositiveIntegerField(choices=SIDE_TYPE, default=1, verbose_name='展示类型')
@@ -68,7 +72,7 @@ class SideBar(models.Model):
 
         result = ''
         if self.display_type == self.DISPLAY_HTML:
-            result = self.content
+            result = mark_safe(self.content)
         elif self.display_type == self.DISPLAY_LATEST:
             context = {
                 'posts': Post.latest_posts()
@@ -81,8 +85,13 @@ class SideBar(models.Model):
             result = render_to_string('config/blocks/sidebar_posts.html', context)
         elif self.display_type == self.DISPLAY_COMMENT:
             context = {
-                'comments': Comment.objects.filter(status=Comment.STATUS_NORMAL).select_related('target')
+                'comments': Comment.objects.filter(status=Comment.STATUS_NORMAL)  # .select_related('target')
             }
             result = render_to_string('config/blocks/sidebar_comments.html', context)
+        elif self.display_type == self.DISPLAY_LINK:
+            context = {
+                'links': Link.objects.filter(status=Link.STATUS_NORMAL)
+            }
+            result = render_to_string('config/blocks/sidebar_links.html', context)
 
         return result

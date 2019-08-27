@@ -15,9 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, re_path, include
+from django.contrib.sitemaps import views as sitemap_views
 
-from blog.views import (IndexView, CategoryView, TagView, PostDetailView)
-from config.views import links
+from blog.views import (IndexView, CategoryView, TagView, PostDetailView, SearchView, AuthorView, LinkListView)
+from blog.rss import LatestPostFeed
+from blog.sitemap import PostSitemap
+from comment.views import CommentView
 from .custom_site import custom_site
 
 urlpatterns = [
@@ -25,7 +28,12 @@ urlpatterns = [
     re_path(r'^category/(?P<category_id>\d+)/$', CategoryView.as_view(), name='category-list'),
     re_path(r'^tag/(?P<tag_id>\d+)/$', TagView.as_view(), name='tag-list'),
     re_path(r'^post/(?P<post_id>\d+).html$', PostDetailView.as_view(), name='post-detail'),
-    path('links/', links, name='links'),
+    re_path(r'author/(?P<owner_id>\d+)/$', AuthorView.as_view(), name='author'),
+    path('search/', SearchView.as_view(), name='search'),
+    path('comment/', CommentView.as_view(), name='comment'),
+    path('links/', LinkListView.as_view(), name='links'),  # TODO(Devin): 添加友情链接
+    re_path(r'^rss/|feed/', LatestPostFeed(), name='rss'),
+    path('sitemap.xml', sitemap_views.sitemap, {'sitemaps': {'posts': PostSitemap}}),
 
     path('polls/', include('polls.urls')),
     path('student/', include('student.urls')),

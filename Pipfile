@@ -8,6 +8,7 @@ coverage = "*"
 
 [packages]
 django = "*"
+mistune = "*"
 
 [requires]
 python_version = "3.6"

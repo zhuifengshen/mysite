@@ -7,7 +7,7 @@
 <body>
 <ul>
     {% for comment in comments %}
-        <li><a href="{% url 'post-detail' comment.target_id %}">{{ comment.target.title }}</a> | {{ comment.nickname }} : {{ comment.content }}</li>
+        <li><a href="{{ comment.target }}">{{ comment.target.title }}  </a>{{ comment.nickname }} : {{ comment.content }}</li>  {# TODO(Devin): 添加博文标题 #}
     {% endfor %}
 </ul>
 </body>
