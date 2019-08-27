@@ -5,8 +5,11 @@
     <title>友情链接</title>
 </head>
 <body>
-    {% for link in links %}
-        <li><a href="{{ link.href }}">{{ link.title }}</a></li>
-    {% endfor %}
+    <ul>
+        {% for link in links %}
+            <li><a href="{{ link.href }}">{{ link.title }}</a></li>
+        {% endfor %}
+    </ul>
+
 </body>
 </html>
