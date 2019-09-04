@@ -22,6 +22,7 @@ class Comment(models.Model):
 
     class Meta:
         verbose_name = verbose_name_plural = '评论'
+        ordering = ['-id']
 
     @classmethod
     def get_by_target(cls, target):

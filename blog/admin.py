@@ -21,6 +21,7 @@ class CategoryAdmin(BaseOwnerAdmin):
     inlines = [PostInline]  # 在分类页面下直接编辑文章
     list_display = ('name', 'status', 'is_nav', 'owner', 'created_time', 'post_count')
     fields = ('name', 'status', 'is_nav')
+    search_fields = ('name', 'id')  # 外键、多对多字段自动搜索补全对应的字段
 
     def post_count(self, obj):
         return obj.post_set.count()
@@ -59,6 +60,7 @@ class PostAdmin(BaseOwnerAdmin):
 
     list_filter = [CategoryOwnerFilter]
     search_fields = ['title', 'category__name']
+    autocomplete_fields = ['category']  # 外键、多对多字段分页加载和自动搜索补全
 
     actions_on_top = True
     actions_on_bottom = True
@@ -78,7 +80,8 @@ class PostAdmin(BaseOwnerAdmin):
             'fields': (('title', 'category'), 'status',)
         }),
         ('内容', {
-            'fields': ('desc', 'content'),
+            'fields': ('desc', 'is_md', 'content'),
+            # 'fields': ('desc', 'is_md', 'content_ck', 'content_md', 'content'),
         }),
         ('额外信息', {
             'classes': ('wide',),  # 'wide' or 'collapse' 隐藏后样式无法显示???

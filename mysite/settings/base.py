@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     'blog.apps.BlogConfig',
     'config.apps.ConfigConfig',
     'comment.apps.CommentConfig',
+    'ckeditor',
+    'ckeditor_uploader',
 
     'login.apps.LoginConfig',
     'polls.apps.PollsConfig',
@@ -123,3 +125,19 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'mysite', 'themes', THEME, 'static'),
 ]
+
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': 800,
+        'tabSpaces': 4,
+        'extraPlugins': 'codesnippet',  # 配置代码插件
+    },
+}
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+CKEDITOR_UPLOAD_PATH = 'article_images'
+DEFAULT_FILE_STORAGE = 'mysite.storage.WatermarkStorage'

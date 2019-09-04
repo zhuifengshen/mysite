@@ -1,5 +1,14 @@
+import json
+import logging
 from datetime import date
+from json import JSONDecodeError
+
+import requests
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.urls import reverse
+from django.views import View
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
@@ -9,6 +18,9 @@ from .models import Post, Tag, Category
 from config.models import SideBar, Link
 from comment.models import Comment
 from comment.forms import CommentForm
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class CommonViewMixin(object):
@@ -23,10 +35,28 @@ class CommonViewMixin(object):
 
 # Create your views here.
 class IndexView(CommonViewMixin, ListView):
-    queryset = Post.latest_posts()
+    queryset = Post.all_posts()
     paginate_by = 20
     context_object_name = 'post_list'
     template_name = 'blog/list.html'
+
+
+class AuthorView(IndexView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        author_id = self.kwargs.get('owner_id')
+        author = get_object_or_404(User, pk=author_id)
+        context.update({
+            'author': author,
+        })
+
+        return context
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        author_id = self.kwargs.get('owner_id')
+
+        return queryset.filter(owner_id=author_id)
 
 
 class CategoryView(IndexView):
@@ -79,13 +109,6 @@ class SearchView(IndexView):
         if not keyword:
             return queryset
         return queryset.filter(Q(title__icontains=keyword) | Q(desc__icontains=keyword))
-
-
-class AuthorView(IndexView):
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        author_id = self.kwargs.get('owner_id')
-        return queryset.filter(owner_id=author_id)
 
 
 class PostDetailView(CommonViewMixin, DetailView):
@@ -150,6 +173,84 @@ class LinkListView(CommonViewMixin, ListView):
     queryset = Link.objects.filter(status=Link.STATUS_NORMAL)
     template_name = 'config/links.html'
     context_object_name = 'link_list'
+
+
+# class CrawlingView(CommonViewMixin, ListView):
+    # queryset = []
+    # template_name = 'blog/crawling.html'
+
+class CrawlingView(View):
+    def get(self, request):
+        context = {}
+        context.update({
+            'sidebars': SideBar.get_all(),
+        })
+        context.update(Category.get_navs())
+        return render(request, 'blog/crawling.html', context=context)
+
+
+def crawl(request):
+    gank_api = 'http://gank.io/api/today'
+    data = {'num': -1, 'msg': 'failed'}
+    try:
+        response = requests.get(gank_api)
+    except requests.exceptions.RequestException:
+        msg = '干货集中营文章获取失败，Request Exception!'
+        logging.error(msg)
+        data['msg'] = msg
+    else:
+        try:
+            result = response.json()
+            if result['error']:
+                data['msg'] = '干货集中营API返回数据错误！'
+            else:
+                results = result.get('results', {})
+                android_list = results.get('Android', [])
+                android_num = gen_post_list(android_list, 'Android')
+                ios_list = results.get('iOS', [])
+                ios_num = gen_post_list(ios_list, 'iOS')
+
+                front_end_list = results.get('前端', [])
+                front_end_num = gen_post_list(front_end_list, '前端')
+                post_num = android_num + ios_num + front_end_num
+
+                data['num'] = post_num
+                data['msg'] = 'Android文章 %d 篇， iOS文章 %d 篇， 前端文章 %d 篇' % (android_num, ios_num, front_end_num)
+        except JSONDecodeError:
+            msg = '服务器响应异常，状态码：%s, 响应内容：%s' % (response.status_code, response.text)
+            logging.error(msg)
+            data['msg'] = msg
+        except Exception as e:
+            logging.error(e)
+            data['msg'] = '程序处理出现异常，请联系管理员查看错误日志，谢谢！'
+
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+def gen_post_list(data_list, data_type):
+    if data_type == 'Android':
+        category = Category.objects.get(name='Android')
+    elif data_type == 'iOS':
+        category = Category.objects.get(name='iOS')
+    elif data_type == '前端':
+        category = Category.objects.get(name='前端')
+    username = '干货集中营'
+    user = User.objects.get(username=username)
+    third_party_tag = Tag.objects.get(name='第三方')
+    num = 0
+    for item in data_list:
+        if not Post.objects.filter(title=item['desc']):
+            title = item.get('desc', '我是个标题')
+            url = item.get('url', reverse('index'))
+            content = "原文地址：[%s](%s)" % (title, url)
+            post = Post(title=title, desc=url, content=content, category=category, owner=user)
+            post.save()
+            post.tag.add(third_party_tag)
+            num += 1
+        else:
+            logging.debug('平台：' + username + ' 分类：' + data_type + '文章：' + item['desc'] + ' 已存在')
+
+    return num
 
 
 def post_list(request, category_id=None, tag_id=None):

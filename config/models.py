@@ -85,12 +85,12 @@ class SideBar(models.Model):
             result = render_to_string('config/blocks/sidebar_posts.html', context)
         elif self.display_type == self.DISPLAY_COMMENT:
             context = {
-                'comments': Comment.objects.filter(status=Comment.STATUS_NORMAL)  # .select_related('target')
+                'comments': Comment.objects.filter(status=Comment.STATUS_NORMAL)[:5]  # .select_related('target')
             }
             result = render_to_string('config/blocks/sidebar_comments.html', context)
         elif self.display_type == self.DISPLAY_LINK:
             context = {
-                'links': Link.objects.filter(status=Link.STATUS_NORMAL)
+                'links': Link.objects.filter(status=Link.STATUS_NORMAL)[:5]
             }
             result = render_to_string('config/blocks/sidebar_links.html', context)
 

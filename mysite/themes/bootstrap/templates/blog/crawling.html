@@ -1,0 +1,59 @@
+{% extends "blog/base.html" %}
+{% load static %}
+{% load comment_block %}
+
+{% block title %}文章爬取{% endblock %}
+
+{% block main %}
+    <h4>文章爬取</h4>
+    <table class="table">
+        <thead class="table">
+            <th scope="col">#</th>
+            <th scope="col">名称</th>
+            <th scope="col">操作</th>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row">1</th>
+                <td scope="row"><a href="http://gank.io/">干货集中营</a></td>
+                <td scope="row"><button type="button" class="btn btn-outline-secondary" id="gank">爬取</button></td>
+            </tr>
+                <tr>
+                <th scope="row">2</th>
+                <td scope="row"><a href="https://juejin.im/">掘金</a></td>
+                <td scope="row"><button type="button" class="btn btn-outline-secondary" id="juejin">爬取</button></td>
+            </tr>
+            <tr>
+                <th scope="row">1</th>
+                <td scope="row"><a href="https://readhub.cn/">ReadHub</a></td>
+                <td scope="row"><button type="button" class="btn btn-outline-secondary" id="readhub">爬取</button></td>
+            </tr>
+            <tr>
+                <th scope="row">1</th>
+                <td scope="row"><a href="https://news.ycombinator.com/">Hacker News</a></td>
+                <td scope="row"><button type="button" class="btn btn-outline-secondary" id="hackernews">爬取</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    {% comment_block request.path %}
+
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'js/jquery-3.4.1.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.js' %}"></script>
+<script>
+    $(function () {
+        $("#gank").click(function () {
+            var jqxhr = $.getJSON('/crawl/').done(function (data) {
+                if(data.num >= 0) {
+                    alert("共爬取文章 " + data.num + " 篇，" + data.msg);
+                } else {
+                    alert("很抱歉！爬取文章失败，原因：" + data.msg);
+                }
+            });
+        });
+    })
+</script>
+{% endblock %}

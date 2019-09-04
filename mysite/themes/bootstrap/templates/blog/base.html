@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>{% block title %}首页{% endblock %} - Tech Daily</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-{#    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.css">#}
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <style>
         .post, .sidebar {
@@ -26,6 +25,9 @@
                             <a class="nav-link" href="{% url 'category-list' cate.id %}">{{ cate.name }}</a>
                         </li>
                     {% endfor %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="http://uc-test-manage-00.umlife.net:9000/">分享小助手</a>
+                    </li>
                 </ul>
                 <form class="form-inline my-2 my-lg-0" action="{% url 'search' %}" method="GET">
                     <input class="form-control mr-sm-2" type="search" name="keyword" placeholder="Search" aria-label="Search" value="{{ keyword }}">
@@ -76,6 +78,7 @@
         {% endblock %}
     </footer>
 
+    {% block javascript %}{% endblock %}
 
 {#<div>顶部分类：#}
 {#    {% for cate in navs %}#}

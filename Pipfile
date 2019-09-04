@@ -9,6 +9,9 @@ coverage = "*"
 [packages]
 django = "*"
 mistune = "*"
+django-ckeditor = "*"
+pillow = "*"
+requests = "*"
 
 [requires]
 python_version = "3.6"

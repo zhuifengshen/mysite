@@ -87,6 +87,7 @@ class Post(models.Model):
     desc = models.CharField(max_length=1024, blank=True, verbose_name='摘要')
     content = models.TextField(verbose_name='正文', help_text='正文必须为MarkDown格式')
     content_html = models.TextField(verbose_name='正文html代码', blank=True, editable=False)
+    is_md = models.BooleanField(default=True, verbose_name='Markdown语法')
     status = models.PositiveIntegerField(choices=STATUS_ITEMS, default=STATUS_NORMAL, verbose_name='状态')
     category = models.ForeignKey(Category, verbose_name='分类', on_delete=models.CASCADE)
     tag = models.ManyToManyField(Tag, verbose_name='标签')  # 可选 or 必须 ???
@@ -103,7 +104,10 @@ class Post(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        self.content_html = mistune.markdown(self.content)  # 因为博文需要修改更新，所以生成markdown格式需要另外保存
+        if self.is_md:
+            self.content_html = mistune.markdown(self.content)  # 因为博文需要修改更新，所以生成markdown格式需要另外保存
+        else:
+            self.content_html = self.content
         super().save(*args, **kwargs)
 
     @cached_property  # 作用是帮我们把返回的数据绑到实例上，不要每次访问时都去执行tags函数  TODO(Devin):与内在property的异同
@@ -135,12 +139,16 @@ class Post(models.Model):
         return post_list, category
 
     @classmethod
-    def latest_posts(cls):
+    def all_posts(cls):
         return cls.objects.filter(status=cls.STATUS_NORMAL)
 
     @classmethod
+    def latest_posts(cls):
+        return cls.objects.filter(status=cls.STATUS_NORMAL)[:5]
+
+    @classmethod
     def hot_posts(cls):
-        return cls.objects.filter(status=cls.STATUS_NORMAL).order_by('-pv').only('id', 'title')
+        return cls.objects.filter(status=cls.STATUS_NORMAL).order_by('-pv').only('id', 'title')[:5]
 
 
 

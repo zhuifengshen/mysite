@@ -5,6 +5,8 @@
     标签页：{{ tag.name }}
 {% elif category %}
     分类页：{{ category.name }}
+{% elif author %}
+    作者页：{{ author.username }}
 {% else %}
     首页
 {% endif %}
@@ -23,6 +25,14 @@
 {#        </li>#}
 {#        {% endfor %}#}
 {#    </ul>#}
+
+    {% if tag %}
+        <h4>标签：{{ tag.name }}</h4>
+    {% elif category %}
+        <h4>分类：{{ category.name }}</h4>
+    {% elif author %}
+        <h4>作者：{{ author.username }}</h4>
+    {% endif %}
 
     {% for post in post_list %}
         <div class="card post">

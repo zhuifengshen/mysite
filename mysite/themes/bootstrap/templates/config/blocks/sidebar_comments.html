@@ -7,7 +7,8 @@
 <body>
 <ul>
     {% for comment in comments %}
-        <li><a href="{{ comment.target }}">{{ comment.target.title }}  </a>{{ comment.nickname }} : {{ comment.content }}</li>  {# TODO(Devin): 添加博文标题 #}
+        <li><a href="{{ comment.target }}">{{ comment.target.title }}</a><br/>
+            {{ comment.nickname }} : {% autoescape off %}{{ comment.content }}{% endautoescape %}</li>  {# TODO(Devin): 添加博文标题 #}
     {% endfor %}
 </ul>
 </body>

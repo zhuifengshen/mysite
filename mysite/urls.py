@@ -16,12 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.contrib.sitemaps import views as sitemap_views
+from django.conf.urls.static import static
 
-from blog.views import (IndexView, CategoryView, TagView, PostDetailView, SearchView, AuthorView, LinkListView)
+from blog.views import (IndexView, CategoryView, TagView, PostDetailView, SearchView, AuthorView, LinkListView, CrawlingView, crawl)
 from blog.rss import LatestPostFeed
 from blog.sitemap import PostSitemap
 from comment.views import CommentView
 from .custom_site import custom_site
+from mysite.settings import base
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
@@ -31,13 +33,17 @@ urlpatterns = [
     re_path(r'author/(?P<owner_id>\d+)/$', AuthorView.as_view(), name='author'),
     path('search/', SearchView.as_view(), name='search'),
     path('comment/', CommentView.as_view(), name='comment'),
-    path('links/', LinkListView.as_view(), name='links'),  # TODO(Devin): 添加友情链接
-    re_path(r'^rss/|feed/', LatestPostFeed(), name='rss'),
+    path('links/', LinkListView.as_view(), name='links'),
+    re_path(r'^rss/|feed/$', LatestPostFeed(), name='rss'),
     path('sitemap.xml', sitemap_views.sitemap, {'sitemaps': {'posts': PostSitemap}}),
+    path('crawling/', CrawlingView.as_view(), name='crawling'),
+    path('crawl/', crawl, name='crawl'),
+
+    path('ckeditor/', include('ckeditor_uploader.urls')),
 
     path('polls/', include('polls.urls')),
     path('student/', include('student.urls')),
     path('myapp/', include('myapp.urls')),
     path('super_admin/', admin.site.urls, name='super-admin'),
     path('admin/', custom_site.urls, name='admin'),
-]
+] + static(base.MEDIA_URL, document_root=base.MEDIA_ROOT)
